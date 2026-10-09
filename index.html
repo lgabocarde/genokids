@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#315b57">
+  <title>GenoKids V4</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+<header class="app-header">
+  <div><p class="eyebrow">Herramienta local de sesión</p><h1>GenoKids <span>V4</span></h1></div>
+  <p class="privacy" role="status">🔒 Solo esta pestaña · sin diagnóstico</p>
+</header>
+<main id="main" tabindex="-1">
+  <section id="welcome-screen" class="screen welcome" aria-labelledby="welcome-title">
+    <div class="hero-card">
+      <div class="hero-mark" aria-hidden="true">◇</div>
+      <p class="eyebrow">Estructura y juego en capas separadas</p>
+      <h2 id="welcome-title">Preparar, elegir y revisar</h2>
+      <p>La persona profesional prepara el genograma. La niña o el niño elige miniaturas sin modificar parentescos.</p>
+      <div class="mode-grid">
+        <button class="mode-card" id="choose-professional" type="button"><span aria-hidden="true">🧩</span><strong>Modo profesional</strong><small>Crear estructura y relaciones</small></button>
+        <button class="mode-card child" id="choose-child" type="button"><span aria-hidden="true">🎨</span><strong>Modo infantil</strong><small>Elegir miniaturas</small></button>
+      </div>
+      <button id="load-example" class="button secondary" type="button">Cargar plantilla ficticia</button>
+    </div>
+  </section>
+
+  <section id="professional-screen" class="screen hidden" aria-labelledby="professional-title">
+    <div class="toolbar">
+      <div><p class="eyebrow">Modo profesional</p><h2 id="professional-title">Constructor familiar</h2></div>
+      <div class="toolbar-actions">
+        <button id="start-child" class="button primary" type="button">Iniciar modo infantil</button>
+        <button id="go-final" class="button secondary" type="button">Revisión visual</button>
+        <button id="exit-professional" class="button ghost" type="button">Volver</button>
+      </div>
+    </div>
+    <div id="validation-summary" class="notice" role="status" aria-live="polite"></div>
+    <div class="professional-grid">
+      <aside class="builder-panel" aria-label="Herramientas de construcción">
+        <details open>
+          <summary>Personas</summary>
+          <form id="person-form" class="form-stack">
+            <input type="hidden" id="person-id">
+            <label>Nombre<input id="person-name" maxlength="60" required></label>
+            <label>Rol<input id="person-role" maxlength="50" placeholder="p. ej. abuela, hermano"></label>
+            <label>Símbolo<select id="person-shape"><option value="circle">Círculo</option><option value="square">Cuadrado</option><option value="diamond">Rombo</option></select></label>
+            <div class="check-row"><label><input id="person-deceased" type="checkbox"> Fallecido/a</label><label><input id="person-identified" type="checkbox"> Persona identificada</label></div>
+            <label>Fecha<input id="person-date" maxlength="30" placeholder="opcional"></label>
+            <div class="form-actions"><button class="button primary" type="submit">Guardar persona</button><button id="cancel-person" class="button ghost" type="button">Limpiar</button></div>
+          </form>
+          <div id="people-list" class="record-list"></div>
+        </details>
+
+        <details>
+          <summary>Parejas y uniones</summary>
+          <form id="union-form" class="form-stack">
+            <input type="hidden" id="union-id">
+            <label>Persona A<select id="union-a" required></select></label>
+            <label>Persona B<select id="union-b" required></select></label>
+            <label>Estado<select id="union-status"><option value="couple">Pareja</option><option value="separated">Separación</option><option value="divorced">Divorcio</option></select></label>
+            <label>Fecha o nota breve<input id="union-label" maxlength="60"></label>
+            <div class="form-actions"><button class="button primary" type="submit">Guardar unión</button><button id="cancel-union" class="button ghost" type="button">Limpiar</button></div>
+          </form>
+          <div id="union-list" class="record-list"></div>
+        </details>
+
+        <details>
+          <summary>Filiación y descendencia</summary>
+          <form id="descent-form" class="form-stack">
+            <label>Origen<select id="descent-source" required></select></label>
+            <label>Hija/o<select id="descent-child" required></select></label>
+            <label>Tipo<select id="descent-type"><option value="biological">Biológica</option><option value="adoptive">Adoptiva</option><option value="care">Cuidado</option></select></label>
+            <button class="button primary" type="submit">Añadir filiación</button>
+          </form>
+          <p class="helper">El origen puede ser una unión de dos progenitores o una sola persona.</p>
+          <div id="descent-list" class="record-list"></div>
+        </details>
+
+        <details>
+          <summary>Relaciones emocionales</summary>
+          <form id="emotional-form" class="form-stack">
+            <label>Persona A<select id="emotion-a" required></select></label>
+            <label>Persona B<select id="emotion-b" required></select></label>
+            <label>Tipo<select id="emotion-type"><option value="close">Cercana · doble línea</option><option value="fused">Fusionada / muy cercana · triple línea</option><option value="distant">Distante · punteada</option><option value="conflict">Conflictiva · zigzag</option><option value="fusedConflict">Fusionada-conflictiva · triple + zigzag</option><option value="cutoff">Cortada / rota · línea con barras</option></select></label>
+            <button class="button primary" type="submit">Añadir relación</button>
+          </form>
+          <div id="emotion-list" class="record-list"></div>
+        </details>
+
+        <details>
+          <summary>Hogares</summary>
+          <form id="household-form" class="form-stack">
+            <label>Identificador del hogar<input id="household-name" maxlength="50" required></label>
+            <fieldset><legend>Integrantes</legend><div id="household-members" class="check-grid"></div></fieldset>
+            <button class="button primary" type="submit">Crear hogar</button>
+          </form>
+          <div id="household-list" class="record-list"></div>
+        </details>
+
+        <details>
+          <summary>Sesión</summary>
+          <div class="session-reset"><button id="reset-session" class="button danger" type="button">Reiniciar datos de esta sesión</button></div>
+        </details>
+      </aside>
+
+      <section class="canvas-panel" aria-labelledby="preview-title">
+        <div class="canvas-heading"><div><p class="eyebrow">Previsualización</p><h3 id="preview-title">Genograma editable</h3></div><label class="toggle"><input id="show-emotional" type="checkbox"><span>Mostrar relaciones emocionales</span></label></div>
+        <p class="drag-help">Selecciona con clic. Arrastra directamente con mouse o tacto; con teclado usa flechas (Mayús = paso mayor).</p>
+        <div id="professional-svg" class="svg-stage" tabindex="0" aria-label="Genograma editable"></div>
+        <div id="legend" class="legend" aria-label="Leyenda"></div>
+      </section>
+    </div>
+  </section>
+
+  <section id="child-screen" class="screen hidden child-shell" aria-labelledby="child-prompt">
+    <header class="child-header"><div id="child-progress" class="progress-text">1 de 1</div><button id="adult-exit" class="adult-exit" type="button">🔒 Salida adulta</button></header>
+    <div class="child-card">
+      <p class="child-kicker">Tu elección</p><h2 id="child-prompt">Elige una miniatura para…</h2><p id="child-person-name" class="child-person"></p>
+      <div id="current-choice" class="current-choice" aria-live="polite"><span>?</span><small>Ninguna elegida</small></div>
+      <label class="search-label">Buscar miniaturas<input id="miniature-search" type="search" placeholder="animal, flor, tren…" autocomplete="off"></label>
+      <div id="category-filters" class="category-filters" role="group" aria-label="Categorías"></div>
+      <div id="miniature-gallery" class="miniature-gallery" role="listbox" aria-label="Miniaturas"></div>
+      <label class="explanation-label">Si quieres, cuéntanos por qué la elegiste<textarea id="child-explanation" rows="2" maxlength="240" placeholder="Opcional; se guardan tus palabras"></textarea></label>
+      <div class="child-actions"><button id="child-prev" class="button secondary" type="button">← Atrás</button><button id="confirm-choice" class="button child-primary" type="button">Confirmar y seguir</button></div>
+    </div>
+  </section>
+
+  <section id="child-result-screen" class="screen hidden result-shell" aria-labelledby="child-result-title">
+    <div class="result-card"><p class="eyebrow">¡Listo!</p><h2 id="child-result-title">Tu tablero familiar</h2><p>No hay respuestas correctas o incorrectas.</p><div id="child-result-svg" class="svg-stage game"></div><div class="result-actions"><button id="result-back" class="button secondary" type="button">Cambiar una elección</button><button id="finish-child" class="button child-primary" type="button">Terminar</button></div></div>
+  </section>
+
+  <section id="final-screen" class="screen hidden" aria-labelledby="final-title">
+    <div class="toolbar"><div><p class="eyebrow">Revisión visual</p><h2 id="final-title">Genograma de la sesión</h2></div><div class="toolbar-actions"><button id="final-game-view" class="button primary" type="button">Vista de juego</button><button id="final-pro-view" class="button secondary" type="button">Vista profesional</button><button id="final-edit" class="button secondary" type="button">Volver a editar</button><button id="final-home" class="button ghost" type="button">Inicio</button></div></div>
+    <div class="final-canvas"><div id="final-svg" class="svg-stage"></div><div id="final-legend" class="legend" aria-label="Leyenda"></div></div>
+  </section>
+</main>
+<dialog id="adult-dialog" aria-labelledby="adult-dialog-title"><form method="dialog"><h2 id="adult-dialog-title">Zona adulta</h2><p>Resuelve esta suma para salir:</p><label><span id="adult-question">7 + 5 =</span><input id="adult-answer" type="number" inputmode="numeric" required></label><p id="adult-error" class="error" role="alert"></p><div class="form-actions"><button value="cancel" class="button secondary">Cancelar</button><button id="adult-confirm" value="default" class="button primary">Continuar</button></div></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
