@@ -1,10 +1,15 @@
 # GenoKids V4
 
-Aplicación local en HTML, CSS, JavaScript vanilla y SVG para preparar un genograma profesional, recoger elecciones infantiles en una capa separada y hacer una revisión visual no interpretativa.
+Aplicación web estática en HTML, CSS, JavaScript vanilla y SVG para preparar un genograma profesional, recoger elecciones infantiles en una capa separada y hacer una revisión visual no interpretativa.
 
-V4 vive en `genokids-v4/`. No modifica `genokids/` ni `genokids-v2/`.
+## Sitio público
 
-## Ejecutar
+- Aplicación: <https://lgabocarde.github.io/genokids/>
+- Código QR: [`assets/genokids-qr.png`](assets/genokids-qr.png)
+
+El QR contiene únicamente la dirección pública del sitio; no incorpora información familiar ni clínica.
+
+## Ejecutar localmente
 
 No requiere instalación ni dependencias.
 
