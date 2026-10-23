@@ -4,11 +4,12 @@ const fs=require('fs');
 const os=require('os');
 const path=require('path');
 const http=require('http');
+const https=require('https');
 const {spawn}=require('child_process');
 const URL=process.env.GENOKIDS_URL||'http://127.0.0.1:4177/';
 const candidates=['C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe','C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe','C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe','C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',path.join(process.env.LOCALAPPDATA||'','Google','Chrome','Application','chrome.exe')];
 const browser=candidates.find(fs.existsSync),delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function httpStatus(url){return new Promise((resolve,reject)=>http.get(url,response=>{response.resume();resolve(response.statusCode);}).on('error',reject));}
+function httpStatus(url){const client=url.startsWith('https:')?https:http;return new Promise((resolve,reject)=>client.get(url,response=>{response.resume();resolve(response.statusCode);}).on('error',reject));}
 async function retry(fn,attempts=60){let last;for(let i=0;i<attempts;i++){try{return await fn();}catch(error){last=error;await delay(150);}}throw last;}
 class CDP{
   constructor(url){this.id=0;this.pending=new Map();this.listeners=new Map();this.ws=new WebSocket(url);}
