@@ -7,7 +7,7 @@ Aplicación web estática en HTML, CSS, JavaScript vanilla y SVG para preparar g
 No requiere instalación ni dependencias.
 
 ```powershell
-cd C:\Users\HP\.openclaw\workspace\genokids-v6
+cd C:\Users\HP\.openclaw\workspace\genokids-definitiva
 node serve.js
 ```
 
