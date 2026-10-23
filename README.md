@@ -1,24 +1,17 @@
-# GenoKids V4
+# GenoKids — primera versión definitiva
 
-Aplicación web estática en HTML, CSS, JavaScript vanilla y SVG para preparar un genograma profesional, recoger elecciones infantiles en una capa separada y hacer una revisión visual no interpretativa.
-
-## Sitio público
-
-- Aplicación: <https://lgabocarde.github.io/genokids/>
-- Código QR: [`assets/genokids-qr.png`](assets/genokids-qr.png)
-
-El QR contiene únicamente la dirección pública del sitio; no incorpora información familiar ni clínica.
+Aplicación web estática en HTML, CSS, JavaScript vanilla y SVG para preparar genogramas profesionales, conservar relaciones emocionales descriptivas y recoger respuestas infantiles en una capa separada. Esta versión conserva íntegramente la notación y el flujo de V6 y permite que la niña o el niño omita personas durante el juego.
 
 ## Ejecutar localmente
 
 No requiere instalación ni dependencias.
 
 ```powershell
-cd C:\Users\HP\.openclaw\workspace\genokids-v4
+cd C:\Users\HP\.openclaw\workspace\genokids-v6
 node serve.js
 ```
 
-Abrir <http://127.0.0.1:4176/>. El servidor escucha `127.0.0.1` por defecto. Se puede cambiar con las variables `HOST` y `PORT` del entorno.
+Abrir <http://127.0.0.1:4177/>. El servidor escucha `127.0.0.1`; `HOST` y `PORT` permiten cambiarlo.
 
 ## Verificar
 
@@ -26,62 +19,86 @@ Con `node serve.js` activo:
 
 ```powershell
 node --check app.js
+node --check tests.js
 node --check browser-smoke.js
 node tests.js
 node browser-smoke.js
 ```
 
-`browser-smoke.js` busca Edge o Chrome instalado y usa Chrome DevTools Protocol sin paquetes. Comprueba HTTP 200, consola, viewport móvil 390×844, ausencia de overflow horizontal, galería sin solapes, flujo infantil, arrastre pointer, movimiento por teclado, actualización de geometría, unión persistente y escritorio 1440×900.
+El smoke usa Edge o Chrome y Chrome DevTools Protocol sin paquetes. Comprueba HTTP 200, consola, móvil 390×844, escritorio 1440×900, persistencia, mascota, edades y fechas, fallecimiento, uniones, offsets movibles, texto independiente y separación del modo infantil.
 
-## Arquitectura V4
+## Modo infantil y omisiones
 
-El estado tiene capas independientes:
+- Cada persona humana puede recibir una miniatura o marcarse como **omitida por ahora**; las mascotas no entran al juego.
+- La omisión permite continuar y completar el tablero sin exigir una miniatura.
+- Antes de finalizar se puede volver atrás y reemplazar una omisión por una miniatura, o cambiar una elección por omisión.
+- En el tablero infantil, una omisión se muestra con un guion neutral y texto accesible «Sin elección infantil»; no tiene significado psicológico ni interpretativo.
+- Las omisiones se guardan únicamente dentro de `childResponse`. Nunca modifican `people`, `unions`, `descentLinks`, `emotionalLinks` ni `households`.
 
-- `people`: nombre, rol, símbolo, fallecimiento, identificación, fecha y posición geométrica interna. Las coordenadas nunca se muestran como campos.
-- `unions`: pareja y estado (`couple`, `separated`, `divorced`).
-- `descentLinks`: una filiación parte explícitamente de una `union` o una `person` y llega a una hija o hijo.
-- `emotionalLinks`: relaciones descriptivas convencionales entre cualquier par.
-- `households`: grupos de integrantes.
-- `childResponse`: miniatura, explicación literal, orden y cambios; no modifica estructura ni parentescos.
+## Notación heredada de V6
 
-La persistencia usa únicamente una clave propia de V4 en `sessionStorage`. `sanitizeState()` filtra referencias rotas, IDs duplicados y valores desconocidos; también migra la forma V2 `parentChildLinks` y nombres emocionales anteriores si una estructura vieja se entrega al saneador. V4 no lee la clave de V2.
+- **Mascota:** tipo `pet` y silueta negra de perro, como el ejemplo del documento. Puede tener nombre, especie, edad y estado fallecido. No puede formar una unión humana/de pareja ni una filiación humana.
+- **Edad:** número de 0 a 130 dentro del símbolo humano.
+- **Fechas personales:** nacimiento a la izquierda; fallecimiento a la derecha solo cuando la persona o mascota está marcada como fallecida.
+- **Fallecimiento:** dos diagonales forman una X completa sobre el símbolo.
+- **Matrimonio:** línea continua y etiqueta `m FECHA` inicialmente centrada.
+- **Divorcio:** línea principal continua, `m FECHA` a la izquierda, dos barras de ruptura inicialmente al centro y `d FECHA` a la derecha.
+- **Unión libre:** línea discontinua.
+- **Elementos de unión:** las etiquetas de matrimonio/divorcio y las barras de ruptura son seleccionables. Pointer/tacto y flechas izquierda/derecha las mueven dentro de la línea; Mayús usa un paso mayor. Los offsets quedan persistidos.
+- **Fecha del genograma:** se muestra en la esquina inferior derecha del SVG cuando está definida.
+- **Texto independiente:** anotación profesional libre, separada de relaciones emocionales y respuesta infantil; admite crear, editar, mover, seleccionar y eliminar.
 
-## Decisiones de geometría
+## Biblioteca y migración
 
-- **Unión:** `computeUnionGeometry()` conserva un tramo horizontal y un punto medio incluso si una persona fue arrastrada verticalmente; conectores cortos unen el tramo con ambos nodos.
-- **Descendencia:** `computeDescentGeometry()` usa el centro de la unión como origen. Hijo único recibe una línea directa. Varios hijos comparten tronco vertical, barra de hermanos y ramales. Una fuente individual sigue siendo compatible.
-- **Actualización:** pointer drag y flechas modifican la posición interna y vuelven a crear todo el SVG inmediatamente. Mayús + flecha mueve en pasos mayores.
-- **Hogares:** `computeHouseholdGeometry()` crea un contorno con encabezado. Si un nodo ajeno cae dentro del rectángulo envolvente, genera fragmentos por integrante para no encerrarlo accidentalmente. Un integrante recibe un contorno propio.
-- **Emocionales:** cercana (doble), fusionada (triple), distante (punteada), conflictiva (zigzag), fusionada-conflictiva (triple con zigzag) y cortada/rota (línea con dos barras). Color y patrón son redundantes; la leyenda accesible los rotula.
+- V6 usa únicamente `localStorage` con la clave propia `genokids-v6-library`.
+- No consulta, copia ni borra automáticamente la clave de V5.
+- Cada registro conserva ID estable, nombre, fecha de creación, última modificación y estado saneado.
+- Guardar actualiza el registro actual sin duplicarlo; crear nuevo agrega otro.
+- La importación V5 es manual desde un archivo JSON. `migrateV5Library()` acepta una biblioteca V5 o un estado suministrado; `mergeImportedLibrary()` hace *upsert* por ID, por lo que un ID existente se actualiza en vez de duplicarse.
+- El saneamiento migra el campo V5 `date`: para una persona fallecida con un intervalo como `1951–2021`, separa nacimiento y fallecimiento; si no hay separación inequívoca, lo conserva como nacimiento y deja fallecimiento vacío.
+- Fechas del genograma ausentes en V5 se dejan vacías para no inventar información histórica; pueden definirse manualmente.
+- JSON corrupto o referencias incompatibles se descartan de forma acotada y dejan una biblioteca utilizable.
 
-## Accesibilidad y uso táctil
+Los datos quedan solo en ese navegador y dispositivo. No hay backend, nube, sincronización, cuentas, exportación ni publicación.
 
-- Objetivos interactivos de 44 px o mayores, foco visible, etiquetas y regiones anunciadas.
-- Selección de persona por clic/tap, arrastre pointer para mouse/touch y flechas como alternativa de teclado.
-- Persona identificada con doble contorno; fallecimiento con diagonal, daga visual y estado incluido en la ficha/lista.
-- Galería de 213 miniaturas en CSS Grid con filas y tamaños controlados, `overflow` y `contain`; cuatro columnas a 390 px y seis en escritorio.
-- El modo infantil no expone herramientas de parentesco. La explicación se guarda literalmente y por separado.
+## Capas independientes
 
-## Privacidad y alcance
+- **Estructura profesional:** `people` (personas y mascotas), `unions`, `descentLinks`, `households`, `annotations` y `genogramDate`.
+- **Relaciones emocionales:** `emotionalLinks`, descriptivas y visibles solo en vistas profesionales.
+- **Respuesta infantil:** `childResponse`, con miniatura u omisión, explicación literal, orden y cambios; solo recorre personas humanas y no altera estructura ni parentescos.
 
-- Sin backend, nube, cuentas, exportación, diagnóstico, puntajes ni interpretación automática.
-- El servidor incluido solo entrega archivos estáticos; no recibe ni almacena el estado.
-- `sessionStorage` se limita a la pestaña y se puede borrar con “Reiniciar datos de esta sesión”, tras confirmación explícita.
-- Unicode emoji puede verse distinto según el sistema operativo; no se asigna significado psicológico a ninguna miniatura.
+La herramienta no genera diagnósticos, puntuaciones ni interpretación clínica. Las miniaturas no tienen significado psicológico preasignado. El texto independiente es una anotación visual libre, no una observación clínica estructurada.
 
-## Límites reales
+## Accesibilidad y responsive
 
-- El trazado no optimiza automáticamente cruces en familias grandes; el profesional coloca personas por arrastre.
-- Cuando un hogar contiene un nodo ajeno dentro de su envolvente, el modo seguro usa contornos fragmentados por integrante en lugar de calcular un polígono topológico mínimo.
-- Las fechas son texto breve, no un modelo temporal normalizado.
-- La salida adulta mediante suma es una barrera de interfaz, no autenticación.
+- Etiquetas asociadas, errores y estados anunciados, foco visible y controles táctiles de al menos 44 px.
+- Alternativas de teclado para personas, mascotas, textos y elementos de unión.
+- Biblioteca, constructor y galería adaptados a móvil y escritorio.
+- El modo infantil no expone herramientas profesionales, textos independientes ni relaciones emocionales. «Omitir por ahora» es un botón táctil y de teclado con estado accesible `aria-pressed`.
+
+## Decisiones reversibles
+
+- Las fechas se conservan como texto breve porque el PDF muestra años y no define un formato temporal único. La fecha del genograma sí usa `AAAA-MM-DD` mediante un campo de fecha.
+- `Separación` se conserva como compatibilidad con V5: línea continua y una barra movible; el PDF especifica de forma directa matrimonio, divorcio y unión libre.
+- Las mascotas pueden participar en hogares y relaciones emocionales descriptivas, pero no en uniones de pareja ni filiación humana. El PDF prohíbe expresamente la unión con humanos y no define esas otras dos capas.
+- El símbolo de mascota reproduce una silueta vectorial local de perro; no depende de emoji o fuente del sistema.
+
+## Publicación
+
+La versión pública canónica se sirve mediante GitHub Pages en <https://lgabocarde.github.io/genokids/>. El QR local `assets/genokids-qr.png` contiene únicamente esa URL HTTPS pública; no contiene datos familiares, clínicos ni identificadores.
 
 ## Archivos
 
-- `index.html`: pantallas, formularios y controles.
-- `styles.css`: diseño responsive, táctil y patrones visuales.
-- `app.js`: estado, saneamiento, validación, geometría, SVG, persistencia y flujos.
-- `tests.js`: 14 pruebas unitarias/de contrato, incluidas las geometrías requeridas.
-- `browser-smoke.js`: smoke E2E headless opcional.
-- `serve.js`: servidor estático local en puerto 4176.
-- `assets/README.md`: reserva documentada para recursos locales futuros.
+- `index.html`: biblioteca, formularios, importación controlada y pantallas.
+- `styles.css`: responsive, accesibilidad táctil y selección visual.
+- `app.js`: estado V6, migración, saneamiento, geometría, persistencia, SVG e interacciones.
+- `tests.js`: pruebas unitarias y de contrato, incluidas omisiones, reversibilidad, persistencia y separación de capas.
+- `browser-smoke.js`: smoke E2E móvil y escritorio.
+- `serve.js`: servidor estático local en el puerto 4177.
+
+## Límites
+
+- El trazado no optimiza automáticamente cruces en familias grandes.
+- El texto independiente usa una sola línea SVG; textos muy largos se conservan, pero no se ajustan automáticamente en varias líneas.
+- Las fechas personales y de unión no se validan como cronología clínica.
+- La suma para salida adulta es una barrera de interfaz, no autenticación.

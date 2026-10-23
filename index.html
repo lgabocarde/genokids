@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#315b57">
-  <title>GenoKids V4</title>
+  <title>GenoKids</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <a class="skip-link" href="#main">Saltar al contenido</a>
 <header class="app-header">
-  <div><p class="eyebrow">Herramienta local de sesión</p><h1>GenoKids <span>V4</span></h1></div>
-  <p class="privacy" role="status">🔒 Solo esta pestaña · sin diagnóstico</p>
+  <div><p class="eyebrow">Herramienta local de sesión</p><h1>GenoKids</h1></div>
+  <p class="privacy" role="status">🔒 En este navegador · sin diagnóstico</p>
 </header>
 <main id="main" tabindex="-1">
   <section id="welcome-screen" class="screen welcome" aria-labelledby="welcome-title">
@@ -20,11 +20,29 @@
       <p class="eyebrow">Estructura y juego en capas separadas</p>
       <h2 id="welcome-title">Preparar, elegir y revisar</h2>
       <p>La persona profesional prepara el genograma. La niña o el niño elige miniaturas sin modificar parentescos.</p>
+      <section class="library-panel" aria-labelledby="library-title">
+        <div class="library-heading"><div><p class="eyebrow">Biblioteca local</p><h3 id="library-title">Genogramas guardados</h3></div><button id="new-genogram" class="button secondary" type="button">Crear nuevo</button></div>
+        <form id="new-genogram-form" class="library-create" novalidate>
+          <label for="new-genogram-name">Nombre del genograma</label>
+          <div class="library-create-row"><input id="new-genogram-name" maxlength="80" required autocomplete="off" placeholder="p. ej. Familia Martínez"><button class="button primary" type="submit">Crear y abrir</button></div>
+          <p id="new-genogram-error" class="field-error" role="alert"></p>
+        </form>
+        <div id="genogram-library" class="library-list" aria-live="polite"></div>
+        <p class="storage-note">Los datos quedan únicamente en este navegador y dispositivo.</p>
+        <details class="import-panel">
+          <summary>Importar una biblioteca V5 desde un archivo JSON</summary>
+          <p class="helper">Importación manual y controlada: V6 no consulta ni borra el almacenamiento de V5. Los registros con el mismo ID se actualizan, no se duplican.</p>
+          <label for="import-v5-file">Archivo JSON de V5<input id="import-v5-file" type="file" accept="application/json,.json"></label>
+          <button id="import-v5" class="button secondary" type="button">Importar V5</button>
+          <p id="import-v5-status" class="field-error" role="status" aria-live="polite"></p>
+        </details>
+      </section>
+      <p id="current-genogram" class="current-genogram" role="status"></p>
       <div class="mode-grid">
         <button class="mode-card" id="choose-professional" type="button"><span aria-hidden="true">🧩</span><strong>Modo profesional</strong><small>Crear estructura y relaciones</small></button>
         <button class="mode-card child" id="choose-child" type="button"><span aria-hidden="true">🎨</span><strong>Modo infantil</strong><small>Elegir miniaturas</small></button>
       </div>
-      <button id="load-example" class="button secondary" type="button">Cargar plantilla ficticia</button>
+      <button id="load-example" class="button secondary" type="button">Crear plantilla ficticia nueva</button>
     </div>
   </section>
 
@@ -44,11 +62,14 @@
           <summary>Personas</summary>
           <form id="person-form" class="form-stack">
             <input type="hidden" id="person-id">
+            <label>Tipo<select id="person-kind"><option value="human">Persona</option><option value="pet">Mascota</option></select></label>
             <label>Nombre<input id="person-name" maxlength="60" required></label>
+            <label>Especie (para mascota)<input id="person-species" maxlength="50" placeholder="p. ej. perro, gata"></label>
             <label>Rol<input id="person-role" maxlength="50" placeholder="p. ej. abuela, hermano"></label>
             <label>Símbolo<select id="person-shape"><option value="circle">Círculo</option><option value="square">Cuadrado</option><option value="diamond">Rombo</option></select></label>
             <div class="check-row"><label><input id="person-deceased" type="checkbox"> Fallecido/a</label><label><input id="person-identified" type="checkbox"> Persona identificada</label></div>
-            <label>Fecha<input id="person-date" maxlength="30" placeholder="opcional"></label>
+            <label>Edad<input id="person-age" type="number" min="0" max="130" inputmode="numeric" placeholder="años"></label>
+            <div class="date-row"><label>Fecha de nacimiento<input id="person-birth-date" maxlength="30" placeholder="AAAA o DD/MM/AAAA"></label><label>Fecha de fallecimiento<input id="person-death-date" maxlength="30" placeholder="solo si aplica"></label></div>
             <div class="form-actions"><button class="button primary" type="submit">Guardar persona</button><button id="cancel-person" class="button ghost" type="button">Limpiar</button></div>
           </form>
           <div id="people-list" class="record-list"></div>
@@ -60,8 +81,8 @@
             <input type="hidden" id="union-id">
             <label>Persona A<select id="union-a" required></select></label>
             <label>Persona B<select id="union-b" required></select></label>
-            <label>Estado<select id="union-status"><option value="couple">Pareja</option><option value="separated">Separación</option><option value="divorced">Divorcio</option></select></label>
-            <label>Fecha o nota breve<input id="union-label" maxlength="60"></label>
+            <label>Tipo de unión<select id="union-status"><option value="marriage">Matrimonio</option><option value="divorced">Divorcio</option><option value="free">Unión libre</option><option value="separated">Separación</option></select></label>
+            <div class="date-row"><label>Fecha de matrimonio<input id="union-marriage-date" maxlength="30" placeholder="AAAA o DD/MM/AAAA"></label><label>Fecha de divorcio<input id="union-divorce-date" maxlength="30" placeholder="solo para divorcio"></label></div>
             <div class="form-actions"><button class="button primary" type="submit">Guardar unión</button><button id="cancel-union" class="button ghost" type="button">Limpiar</button></div>
           </form>
           <div id="union-list" class="record-list"></div>
@@ -101,14 +122,26 @@
         </details>
 
         <details>
-          <summary>Sesión</summary>
-          <div class="session-reset"><button id="reset-session" class="button danger" type="button">Reiniciar datos de esta sesión</button></div>
+          <summary>Texto independiente</summary>
+          <form id="annotation-form" class="form-stack">
+            <input type="hidden" id="annotation-id">
+            <label>Anotación profesional<textarea id="annotation-text" rows="3" maxlength="240" required placeholder="Texto libre visible en el lienzo"></textarea></label>
+            <p class="helper">Esta anotación profesional es independiente de observaciones clínicas y de las palabras de la niña o el niño.</p>
+            <div class="form-actions"><button class="button primary" type="submit">Guardar texto</button><button id="cancel-annotation" class="button ghost" type="button">Limpiar</button></div>
+          </form>
+          <div id="annotation-list" class="record-list"></div>
+        </details>
+
+        <details>
+          <summary>Genograma actual</summary>
+          <form id="rename-genogram-form" class="form-stack" novalidate><label>Nombre<input id="rename-genogram-name" maxlength="80" required></label><label>Fecha del genograma<input id="genogram-date" type="date"></label><p id="rename-genogram-error" class="field-error" role="alert"></p><button class="button secondary" type="submit">Guardar datos</button></form>
+          <div class="session-reset"><button id="reset-session" class="button danger" type="button">Vaciar este genograma</button></div>
         </details>
       </aside>
 
       <section class="canvas-panel" aria-labelledby="preview-title">
         <div class="canvas-heading"><div><p class="eyebrow">Previsualización</p><h3 id="preview-title">Genograma editable</h3></div><label class="toggle"><input id="show-emotional" type="checkbox"><span>Mostrar relaciones emocionales</span></label></div>
-        <p class="drag-help">Selecciona con clic. Arrastra directamente con mouse o tacto; con teclado usa flechas (Mayús = paso mayor).</p>
+        <p class="drag-help">Selecciona personas, mascotas, textos o elementos de una unión. Arrastra con mouse o tacto; con teclado usa flechas (Mayús = paso mayor). Las fechas y barras de las uniones se mueven solo horizontalmente.</p>
         <div id="professional-svg" class="svg-stage" tabindex="0" aria-label="Genograma editable"></div>
         <div id="legend" class="legend" aria-label="Leyenda"></div>
       </section>
@@ -124,12 +157,13 @@
       <div id="category-filters" class="category-filters" role="group" aria-label="Categorías"></div>
       <div id="miniature-gallery" class="miniature-gallery" role="listbox" aria-label="Miniaturas"></div>
       <label class="explanation-label">Si quieres, cuéntanos por qué la elegiste<textarea id="child-explanation" rows="2" maxlength="240" placeholder="Opcional; se guardan tus palabras"></textarea></label>
+      <div class="child-skip"><button id="omit-choice" class="button ghost" type="button" aria-pressed="false">Omitir por ahora</button><small>Puede volver atrás y elegir o cambiar después.</small></div>
       <div class="child-actions"><button id="child-prev" class="button secondary" type="button">← Atrás</button><button id="confirm-choice" class="button child-primary" type="button">Confirmar y seguir</button></div>
     </div>
   </section>
 
   <section id="child-result-screen" class="screen hidden result-shell" aria-labelledby="child-result-title">
-    <div class="result-card"><p class="eyebrow">¡Listo!</p><h2 id="child-result-title">Tu tablero familiar</h2><p>No hay respuestas correctas o incorrectas.</p><div id="child-result-svg" class="svg-stage game"></div><div class="result-actions"><button id="result-back" class="button secondary" type="button">Cambiar una elección</button><button id="finish-child" class="button child-primary" type="button">Terminar</button></div></div>
+    <div class="result-card"><p class="eyebrow">¡Listo!</p><h2 id="child-result-title">Tu tablero familiar</h2><p>No hay respuestas correctas o incorrectas. Las personas sin elección se muestran de forma neutral.</p><div id="child-result-svg" class="svg-stage game"></div><div class="result-actions"><button id="result-back" class="button secondary" type="button">Cambiar una elección</button><button id="finish-child" class="button child-primary" type="button">Terminar</button></div></div>
   </section>
 
   <section id="final-screen" class="screen hidden" aria-labelledby="final-title">

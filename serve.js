@@ -4,7 +4,7 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const root=__dirname;
-const port=Number(process.env.PORT||4176);
+const port=Number(process.env.PORT||4177);
 const host=process.env.HOST||'127.0.0.1';
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.md':'text/markdown; charset=utf-8','.svg':'image/svg+xml'};
 const server=http.createServer((req,res)=>{
@@ -17,4 +17,4 @@ const server=http.createServer((req,res)=>{
   res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
   fs.createReadStream(file).pipe(res);
 });
-server.listen(port,host,()=>console.log(`GenoKids V4: http://${host}:${port}/`));
+server.listen(port,host,()=>console.log(`GenoKids: http://${host}:${port}/`));
