@@ -11,11 +11,7 @@ cd C:\Users\HP\.openclaw\workspace\genokids-definitiva
 node serve.js
 ```
 
-Abrir <http://127.0.0.1:4177/>. El servidor escucha `127.0.0.1`; `HOST` y `PORT` permiten cambiarlo.
 
-## Verificar
-
-Con `node serve.js` activo:
 
 ```powershell
 node --check app.js
